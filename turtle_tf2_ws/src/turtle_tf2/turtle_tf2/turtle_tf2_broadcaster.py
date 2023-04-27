@@ -40,14 +40,13 @@ class TurtleFramePublisher(Node):
         self.turtlename = self.declare_parameter('turtlename', 'turtle').get_parameter_value().string_value
 
         # TODO: Initialize the transform broadcaster calling `TransformBroadcaster` on this Node
-        self.tf_broadcaster = ...
+        self.tf_broadcaster = TransformBroadcaster(self)
         
-
         # We will use the subscription to get the pose of the turtle to broadcast the transform
         # TODO: Create a subscriber to '/{turtlename}/pose'
         # Use `Pose` as msg type and `turtle_pose_cb` as callback function
-        ...
-        
+        self.subscription = self.create_subscription(Pose, f'/{self.turtlename}/pose', self.turtle_pose_cb, 1)
+        self.subscription
 
         self.get_logger().info(f'{self.get_name()} has been started')
         self.get_logger().info(f'Publishing {self.turtlename} transform')
@@ -60,20 +59,21 @@ class TurtleFramePublisher(Node):
         t.child_frame_id = self.turtlename # Set the child frame of the transform
 
         # TODO: Set the translation of the transform with `t.transform.translation`
-        ...
-        
-
-
+        t.transform.translation.x = msg.x
+        t.transform.translation.y = msg.y
+        t.transform.translation.z = 0.0     
 
         # Set the rotation of the transform
         # TODO: Set the rotation of the transform with `t.transform.rotation`
         # q = [x, y, z, w]
         q = tf_transformations.quaternion_from_euler(0, 0, msg.theta)  # Get the orientation of the turtle as a quaternion
-        ...
+        t.transform.rotation.x = q[0]
+        t.transform.rotation.y = q[1]
+        t.transform.rotation.z = q[2]
+        t.transform.rotation.w = q[3]
         
-
         # TODO: Send the transform via `tf_broadcaster`
-        ...
+        self.tf_broadcaster.sendTransform(t)
         
 
 def main(args=None):
